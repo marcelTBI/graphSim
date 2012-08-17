@@ -1,0 +1,32 @@
+# Name of your program
+package "graphSim" # don't use package if you're using automake
+purpose "Graph simulation tool"
+
+# Version of your program
+version "0.1"   # don't use version if you're using automake
+
+# command line options passed to gengetopt
+args "--file-name=graphSim_cmdline --include-getopt --default-optional --unamed-opts"
+
+# Options
+option "verbose-lvl"        v "Level of verbosity (0 = nothing, 3 = full)" int default="0" no
+option "rates"              r "Create rates for treekin" flag off
+option "rates-file"         f "File where to write rates" string default="rates.out" no
+option "temp"               T "Temperature in Celsius" double default="37.0" no
+option "print-graph"        - "Generate xmgrace graph from best paths?" flag off
+
+section "Dot output"
+option "dot-print"          - "Generate dot file?" flag off
+option "dot-graph"          - "Generate also neato file from dot output? (forces dot-print)" flag off
+option "dot-threshold"      - "Maximal number of sequences in graph (0=infty)" int default="0" no
+
+section "All paths"
+option "all-from"           - "Construct all paths from node number\n(all-to must be specified too)" int default="0" no
+option "all-to"             - "Construct all paths to node number" int no
+option "all-len"            - "Maximal length of paths" int default="8" no
+
+section "Simulation"
+option "simulate"           - "Simulate? (simulates from all-from to all-to)" flag off
+option "sim-len"            - "Maximal length of simulation" int default="10000" no
+option "sim-cnt"            - "Number of simulated trajectories" int default="1000" no
+option "sim-print-len"      - "Number of best paths to print (-1 means all of them)" int default="-1" no
