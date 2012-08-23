@@ -122,7 +122,8 @@ public:
   int LoadStructsFromFile(const char *filename);
   int LoadFromFile(FILE *file);
   int LoadStructsFromFile(FILE *file);
-  int PrintToDot(const char *filename, bool cluster = false, bool neato = false, int threshold = -1);  // cluster = nice clustering + colouring
+  int PrintToDot(const char *filename, bool cluster = true, bool neato = false, int threshold = -1);  // cluster = nice clustering + colouring
+  int PrintDotStruct(int structure, int radius, bool cluster = true, int threshold = -1);  // print only around one structure
   int PrintRates(const char *filename, float temp);
 
   // functions to assign weights

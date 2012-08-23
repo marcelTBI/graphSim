@@ -38,10 +38,13 @@ const char *gengetopt_args_info_help[] = {
   "  -f, --rates-file=STRING  File where to write rates  (default=`rates.out')",
   "  -T, --temp=DOUBLE        Temperature in Celsius  (default=`37.0')",
   "      --print-graph        Generate xmgrace graph from best paths?  \n                             (default=off)",
+  "  -R, --RNAstructs         Assume RNA structs input from RNAsubopt  \n                             (default=on)",
   "\nDot output:",
   "      --dot-print          Generate dot file?  (default=off)",
   "      --dot-graph          Generate also neato file from dot output? (forces \n                             dot-print)  (default=off)",
   "      --dot-threshold=INT  Maximal number of sequences in graph (0=infty)  \n                             (default=`0')",
+  "      --dot-struct=INT     Print neato graph only around one structure (graph \n                             will be saved to graph<num>.pdf)",
+  "      --dot-radius=INT     Radius of --dot-struct print  (default=`8')",
   "\nAll paths:",
   "      --all-from=INT       Construct all paths from node number\n                             (all-to must be specified too)  (default=`0')",
   "      --all-to=INT         Construct all paths to node number",
@@ -84,9 +87,12 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->rates_file_given = 0 ;
   args_info->temp_given = 0 ;
   args_info->print_graph_given = 0 ;
+  args_info->RNAstructs_given = 0 ;
   args_info->dot_print_given = 0 ;
   args_info->dot_graph_given = 0 ;
   args_info->dot_threshold_given = 0 ;
+  args_info->dot_struct_given = 0 ;
+  args_info->dot_radius_given = 0 ;
   args_info->all_from_given = 0 ;
   args_info->all_to_given = 0 ;
   args_info->all_len_given = 0 ;
@@ -108,10 +114,14 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->temp_arg = 37.0;
   args_info->temp_orig = NULL;
   args_info->print_graph_flag = 0;
+  args_info->RNAstructs_flag = 1;
   args_info->dot_print_flag = 0;
   args_info->dot_graph_flag = 0;
   args_info->dot_threshold_arg = 0;
   args_info->dot_threshold_orig = NULL;
+  args_info->dot_struct_orig = NULL;
+  args_info->dot_radius_arg = 8;
+  args_info->dot_radius_orig = NULL;
   args_info->all_from_arg = 0;
   args_info->all_from_orig = NULL;
   args_info->all_to_orig = NULL;
@@ -139,16 +149,19 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->rates_file_help = gengetopt_args_info_help[4] ;
   args_info->temp_help = gengetopt_args_info_help[5] ;
   args_info->print_graph_help = gengetopt_args_info_help[6] ;
-  args_info->dot_print_help = gengetopt_args_info_help[8] ;
-  args_info->dot_graph_help = gengetopt_args_info_help[9] ;
-  args_info->dot_threshold_help = gengetopt_args_info_help[10] ;
-  args_info->all_from_help = gengetopt_args_info_help[12] ;
-  args_info->all_to_help = gengetopt_args_info_help[13] ;
-  args_info->all_len_help = gengetopt_args_info_help[14] ;
-  args_info->simulate_help = gengetopt_args_info_help[16] ;
-  args_info->sim_len_help = gengetopt_args_info_help[17] ;
-  args_info->sim_cnt_help = gengetopt_args_info_help[18] ;
-  args_info->sim_print_len_help = gengetopt_args_info_help[19] ;
+  args_info->RNAstructs_help = gengetopt_args_info_help[7] ;
+  args_info->dot_print_help = gengetopt_args_info_help[9] ;
+  args_info->dot_graph_help = gengetopt_args_info_help[10] ;
+  args_info->dot_threshold_help = gengetopt_args_info_help[11] ;
+  args_info->dot_struct_help = gengetopt_args_info_help[12] ;
+  args_info->dot_radius_help = gengetopt_args_info_help[13] ;
+  args_info->all_from_help = gengetopt_args_info_help[15] ;
+  args_info->all_to_help = gengetopt_args_info_help[16] ;
+  args_info->all_len_help = gengetopt_args_info_help[17] ;
+  args_info->simulate_help = gengetopt_args_info_help[19] ;
+  args_info->sim_len_help = gengetopt_args_info_help[20] ;
+  args_info->sim_cnt_help = gengetopt_args_info_help[21] ;
+  args_info->sim_print_len_help = gengetopt_args_info_help[22] ;
   
 }
 
@@ -237,6 +250,8 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   free_string_field (&(args_info->rates_file_orig));
   free_string_field (&(args_info->temp_orig));
   free_string_field (&(args_info->dot_threshold_orig));
+  free_string_field (&(args_info->dot_struct_orig));
+  free_string_field (&(args_info->dot_radius_orig));
   free_string_field (&(args_info->all_from_orig));
   free_string_field (&(args_info->all_to_orig));
   free_string_field (&(args_info->all_len_orig));
@@ -292,12 +307,18 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "temp", args_info->temp_orig, 0);
   if (args_info->print_graph_given)
     write_into_file(outfile, "print-graph", 0, 0 );
+  if (args_info->RNAstructs_given)
+    write_into_file(outfile, "RNAstructs", 0, 0 );
   if (args_info->dot_print_given)
     write_into_file(outfile, "dot-print", 0, 0 );
   if (args_info->dot_graph_given)
     write_into_file(outfile, "dot-graph", 0, 0 );
   if (args_info->dot_threshold_given)
     write_into_file(outfile, "dot-threshold", args_info->dot_threshold_orig, 0);
+  if (args_info->dot_struct_given)
+    write_into_file(outfile, "dot-struct", args_info->dot_struct_orig, 0);
+  if (args_info->dot_radius_given)
+    write_into_file(outfile, "dot-radius", args_info->dot_radius_orig, 0);
   if (args_info->all_from_given)
     write_into_file(outfile, "all-from", args_info->all_from_orig, 0);
   if (args_info->all_to_given)
@@ -1174,9 +1195,12 @@ cmdline_parser_internal (
         { "rates-file",	1, NULL, 'f' },
         { "temp",	1, NULL, 'T' },
         { "print-graph",	0, NULL, 0 },
+        { "RNAstructs",	0, NULL, 'R' },
         { "dot-print",	0, NULL, 0 },
         { "dot-graph",	0, NULL, 0 },
         { "dot-threshold",	1, NULL, 0 },
+        { "dot-struct",	1, NULL, 0 },
+        { "dot-radius",	1, NULL, 0 },
         { "all-from",	1, NULL, 0 },
         { "all-to",	1, NULL, 0 },
         { "all-len",	1, NULL, 0 },
@@ -1192,7 +1216,7 @@ cmdline_parser_internal (
       custom_opterr = opterr;
       custom_optopt = optopt;
 
-      c = custom_getopt_long (argc, argv, "hVv:rf:T:", long_options, &option_index);
+      c = custom_getopt_long (argc, argv, "hVv:rf:T:R", long_options, &option_index);
 
       optarg = custom_optarg;
       optind = custom_optind;
@@ -1259,6 +1283,16 @@ cmdline_parser_internal (
             goto failure;
         
           break;
+        case 'R':	/* Assume RNA structs input from RNAsubopt.  */
+        
+        
+          if (update_arg((void *)&(args_info->RNAstructs_flag), 0, &(args_info->RNAstructs_given),
+              &(local_args_info.RNAstructs_given), optarg, 0, 0, ARG_FLAG,
+              check_ambiguity, override, 1, 0, "RNAstructs", 'R',
+              additional_error))
+            goto failure;
+        
+          break;
 
         case 0:	/* Long option with no short option */
           /* Generate xmgrace graph from best paths?.  */
@@ -1307,6 +1341,34 @@ cmdline_parser_internal (
                 &(local_args_info.dot_threshold_given), optarg, 0, "0", ARG_INT,
                 check_ambiguity, override, 0, 0,
                 "dot-threshold", '-',
+                additional_error))
+              goto failure;
+          
+          }
+          /* Print neato graph only around one structure (graph will be saved to graph<num>.pdf).  */
+          else if (strcmp (long_options[option_index].name, "dot-struct") == 0)
+          {
+          
+          
+            if (update_arg( (void *)&(args_info->dot_struct_arg), 
+                 &(args_info->dot_struct_orig), &(args_info->dot_struct_given),
+                &(local_args_info.dot_struct_given), optarg, 0, 0, ARG_INT,
+                check_ambiguity, override, 0, 0,
+                "dot-struct", '-',
+                additional_error))
+              goto failure;
+          
+          }
+          /* Radius of --dot-struct print.  */
+          else if (strcmp (long_options[option_index].name, "dot-radius") == 0)
+          {
+          
+          
+            if (update_arg( (void *)&(args_info->dot_radius_arg), 
+                 &(args_info->dot_radius_orig), &(args_info->dot_radius_given),
+                &(local_args_info.dot_radius_given), optarg, 0, "8", ARG_INT,
+                check_ambiguity, override, 0, 0,
+                "dot-radius", '-',
                 additional_error))
               goto failure;
           

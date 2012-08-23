@@ -222,7 +222,9 @@ int Graph::LoadFromFile(FILE *file)
   char name[500];
   char line[600];
   float energy;
-  while (gets(line) && sscanf(line, "%d %s %f\n", &num, name, &energy)==3) {
+  int scan =0;
+  while (gets(line) && ((scan=sscanf(line, "%d %s %f\n", &num, name, &energy))==3 || (scan=sscanf(line, "%d %f\n", &num, &energy))==2)) {
+    if (scan == 2) sprintf(name, "%d", num);
     if ((int)nodes.size()<num+1) nodes.resize(num+1, NULL);
     nodes[num] = new Node(num, energy, name);
   }
@@ -394,6 +396,97 @@ int Graph::PrintToDot(const char *filename, bool cluster, bool neato, int thresh
     strcpy(f3, filename);
     char *f2 = strtok(f3, " .");
     sprintf(syst, "neato -Tps < %s > %s.eps", filename, (f2==NULL? "graph2":f2));
+    system(syst);
+  }
+
+  return 0;
+}
+
+int Graph::PrintDotStruct(int structure, int radius, bool cluster, int threshold)
+{
+  if (!nodes[structure]) return -2;
+
+  FILE *file;
+  char filename[100];
+  sprintf(filename, "graph%d.dot", structure);
+  file = fopen(filename, "w");
+  if (file==NULL) {
+    fprintf(stderr, "Couldn't open file \"%s\"!!!\n", filename);
+    return -1;
+  }
+
+  fprintf(file, "Graph G {\n\tnode [width=0.1, height=0.1, shape=circle];\n");
+
+  // first get nodes, that we need:
+  queue<std::pair<int, int> > que;
+  set<int> nodes_set;
+  nodes_set.insert(structure);
+  que.push(make_pair(structure, radius));
+
+  while (!que.empty() && (threshold==0 || nodes_set.size()<threshold)) {
+    int str = que.front().first;
+    int radius = que.front().second;
+    que.pop();
+
+    for (int i=0; i<nodes[str]->edges.size(); i++) {
+      int neigh = nodes[str]->edges[i]->goesTo(str);
+      if (nodes_set.count(neigh)==0) {
+        nodes_set.insert(neigh);
+        if (radius>1) que.push(make_pair(neigh, radius-1));
+      }
+    }
+  }
+
+  // nodes
+  double min_energy = 1e10;
+  double max_energy = -1e10;
+  for (set<int>::iterator it=nodes_set.begin(); it!=nodes_set.end(); it++) {
+    if (nodes[*it]->energy<min_energy) min_energy = nodes[*it]->energy;
+    if (nodes[*it]->energy>max_energy) max_energy = nodes[*it]->energy;
+  }
+
+  for (set<int>::iterator it=nodes_set.begin(); it!=nodes_set.end(); it++) {
+    if (cluster)  {
+      double value = (nodes[*it]->sink? 0.000 : 0.750);
+      //if (nodes[*it]->sink) fprintf(stderr, "LM: %d\n", *it);
+      fprintf(file, "\"%d\"\t[color = \"%.3f %.3f 1.000\", fontcolor=\"1.000 0.000 %.3f\", fontsize=8.0];\n", nodes[*it]->num, 0.666*(nodes[*it]->energy-min_energy)/(max_energy-min_energy), 1.0-value, value);
+    } else          fprintf(file, "\t\"%d\"\t[pos=\"%d,%.2f!\"];\n", nodes[*it]->num, *it, nodes[*it]->energy);
+  }
+
+  // edges
+  double max_difference = 0.0;
+  if (cluster) {
+    for (unsigned int i=0; i<edges.size(); i++) {
+      if (nodes_set.count(edges[i]->src->num)==0 || nodes_set.count(edges[i]->dest->num)==0) continue;
+      double src = nodes[edges[i]->src->num]->energy;
+      double out = nodes[edges[i]->dest->num]->energy;
+      if (max_difference<absD(out-src)) max_difference = absD(out-src);
+    }
+  }
+
+  for (unsigned int i=0; i<edges.size(); i++) {
+    if (nodes_set.count(edges[i]->src->num)==0 || nodes_set.count(edges[i]->dest->num)==0) continue;
+    if (cluster) {
+      double src = nodes[edges[i]->src->num]->energy;
+      double out = nodes[edges[i]->dest->num]->energy;
+      double difference = 0.666*(1.0-absD(out-src)/max_difference);
+      string direction = (src>out? "forward":(src==out?"both":"back"));
+      fprintf(file, "\t\"%d\" -- \"%d\"\t[color=\"%.3f 1.000 1.000\", dir=%s];\n", edges[i]->src->num, edges[i]->dest->num, difference, direction.c_str());
+    } else fprintf(file, "\t\"%d\" -- \"%d\";\n", edges[i]->src->num, edges[i]->dest->num);
+  }
+
+  fprintf(file, "}\n");
+
+  fclose(file);
+
+  // start neato
+  bool neato = true;
+  if (neato) {
+    char syst[200];
+    char f3[100];
+    strcpy(f3, filename);
+    char *f2 = strtok(f3, " .");
+    sprintf(syst, "neato -Tpdf < %s > %s.pdf", filename, (f2==NULL? "graph_struct":f2));
     system(syst);
   }
 

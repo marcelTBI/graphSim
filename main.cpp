@@ -26,9 +26,11 @@ int main(int argc, char **argv)
   }
 
   Graph graph;
-  graph.LoadStructsFromFile(stdin);
-  //graph.LoadFromFile(stdin);
+  if (args_info.RNAstructs_flag) graph.LoadStructsFromFile(stdin);
+  else graph.LoadFromFile(stdin);
   if (args_info.dot_print_flag || args_info.dot_graph_flag) graph.PrintToDot("graph.dot", true, args_info.dot_graph_flag, args_info.dot_threshold_arg);
+
+  if (args_info.dot_struct_given) graph.PrintDotStruct(args_info.dot_struct_arg, args_info.dot_radius_arg, true, args_info.dot_threshold_arg);
 
   //graph.PrintRates("rates.txt", 200.0);
 

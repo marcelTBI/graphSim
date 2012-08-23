@@ -52,6 +52,8 @@ struct gengetopt_args_info
   const char *temp_help; /**< @brief Temperature in Celsius help description.  */
   int print_graph_flag;	/**< @brief Generate xmgrace graph from best paths? (default=off).  */
   const char *print_graph_help; /**< @brief Generate xmgrace graph from best paths? help description.  */
+  int RNAstructs_flag;	/**< @brief Assume RNA structs input from RNAsubopt (default=on).  */
+  const char *RNAstructs_help; /**< @brief Assume RNA structs input from RNAsubopt help description.  */
   int dot_print_flag;	/**< @brief Generate dot file? (default=off).  */
   const char *dot_print_help; /**< @brief Generate dot file? help description.  */
   int dot_graph_flag;	/**< @brief Generate also neato file from dot output? (forces dot-print) (default=off).  */
@@ -59,6 +61,12 @@ struct gengetopt_args_info
   int dot_threshold_arg;	/**< @brief Maximal number of sequences in graph (0=infty) (default='0').  */
   char * dot_threshold_orig;	/**< @brief Maximal number of sequences in graph (0=infty) original value given at command line.  */
   const char *dot_threshold_help; /**< @brief Maximal number of sequences in graph (0=infty) help description.  */
+  int dot_struct_arg;	/**< @brief Print neato graph only around one structure (graph will be saved to graph<num>.pdf).  */
+  char * dot_struct_orig;	/**< @brief Print neato graph only around one structure (graph will be saved to graph<num>.pdf) original value given at command line.  */
+  const char *dot_struct_help; /**< @brief Print neato graph only around one structure (graph will be saved to graph<num>.pdf) help description.  */
+  int dot_radius_arg;	/**< @brief Radius of --dot-struct print (default='8').  */
+  char * dot_radius_orig;	/**< @brief Radius of --dot-struct print original value given at command line.  */
+  const char *dot_radius_help; /**< @brief Radius of --dot-struct print help description.  */
   int all_from_arg;	/**< @brief Construct all paths from node number\n(all-to must be specified too) (default='0').  */
   char * all_from_orig;	/**< @brief Construct all paths from node number\n(all-to must be specified too) original value given at command line.  */
   const char *all_from_help; /**< @brief Construct all paths from node number\n(all-to must be specified too) help description.  */
@@ -87,9 +95,12 @@ struct gengetopt_args_info
   unsigned int rates_file_given ;	/**< @brief Whether rates-file was given.  */
   unsigned int temp_given ;	/**< @brief Whether temp was given.  */
   unsigned int print_graph_given ;	/**< @brief Whether print-graph was given.  */
+  unsigned int RNAstructs_given ;	/**< @brief Whether RNAstructs was given.  */
   unsigned int dot_print_given ;	/**< @brief Whether dot-print was given.  */
   unsigned int dot_graph_given ;	/**< @brief Whether dot-graph was given.  */
   unsigned int dot_threshold_given ;	/**< @brief Whether dot-threshold was given.  */
+  unsigned int dot_struct_given ;	/**< @brief Whether dot-struct was given.  */
+  unsigned int dot_radius_given ;	/**< @brief Whether dot-radius was given.  */
   unsigned int all_from_given ;	/**< @brief Whether all-from was given.  */
   unsigned int all_to_given ;	/**< @brief Whether all-to was given.  */
   unsigned int all_len_given ;	/**< @brief Whether all-len was given.  */

@@ -14,11 +14,14 @@ option "rates"              r "Create rates for treekin" flag off
 option "rates-file"         f "File where to write rates" string default="rates.out" no
 option "temp"               T "Temperature in Celsius" double default="37.0" no
 option "print-graph"        - "Generate xmgrace graph from best paths?" flag off
+option "RNAstructs"         R "Assume RNA structs input from RNAsubopt" flag on
 
 section "Dot output"
 option "dot-print"          - "Generate dot file?" flag off
 option "dot-graph"          - "Generate also neato file from dot output? (forces dot-print)" flag off
 option "dot-threshold"      - "Maximal number of sequences in graph (0=infty)" int default="0" no
+option "dot-struct"         - "Print neato graph only around one structure (graph will be saved to graph<num>.pdf)" int no
+option "dot-radius"         - "Radius of --dot-struct print" int default="8" no
 
 section "All paths"
 option "all-from"           - "Construct all paths from node number\n(all-to must be specified too)" int default="0" no
